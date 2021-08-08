@@ -1,0 +1,21 @@
+name: test
+
+on:
+  push:
+    branches:
+      - trunk
+    paths-ignore:
+      - LICENSE
+      - README.md
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: denolib/setup-deno@v2
+        with:
+          deno-version: v1.x
+
+      - run: deno test
