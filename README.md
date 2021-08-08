@@ -1,3 +1,5 @@
+[![test](https://github.com/dansalias/aws_s3_presign/actions/workflows/test.yml/badge.svg)](https://github.com/dansalias/aws_s3_presign/actions/workflows/test.yml)
+
 __Deno__ module for creating presigned URLs to get and update objects in Amazon
 S3 (AWS Signature Version 4). Implemented and tested as per
 https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-query-string-auth.html.
