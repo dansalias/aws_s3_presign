@@ -1,4 +1,3 @@
-import { format } from 'https://deno.land/std/datetime/mod.ts'
 import { Sha256, HmacSha256 } from 'https://deno.land/std/hash/sha256.ts'
 
 const NEWLINE = '\n'
@@ -27,7 +26,7 @@ function hmacSha256Hex(key: string | ArrayBuffer, data: string): string {
 }
 
 function ymd(date: Date): string {
-  return format(date, 'yyyyMMdd')
+  return date.toISOString().substring(0,10).replace(/[^\d]/g, '')
 }
 
 function isoDate(date: Date): string {
