@@ -47,22 +47,23 @@ function parseOptions(provided: GetSignedUrlOptions): Required<GetSignedUrlOptio
   }
 }
 
-function getQueryParameters(options: Required<GetSignedUrlOptions>): Record<string, string> {
-   return {
+function getQueryParameters(options: Required<GetSignedUrlOptions>): URLSearchParams {
+   return new URLSearchParams({
     'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
     'X-Amz-Credential': `${options.accessKeyId}/${ymd(options.date)}/${options.region}/s3/aws4_request`,
     'X-Amz-Date': isoDate(options.date),
     'X-Amz-Expires': options.expiresIn.toString(),
     'X-Amz-SignedHeaders': 'host',
     ...(options.sessionToken ? { 'X-Amz-Security-Token': options.sessionToken } : {}),
-  }
+  })
 }
 
-function getCanonicalRequest(options: Required<GetSignedUrlOptions>, queryParameters: Record<string, string>): string {
+function getCanonicalRequest(options: Required<GetSignedUrlOptions>, queryParameters: URLSearchParams): string {
+  queryParameters.sort()
   return [
     options.method, NEWLINE,
     options.objectPath, NEWLINE,
-    new URLSearchParams(queryParameters).toString(), NEWLINE,
+    queryParameters.toString(), NEWLINE,
     `host:${options.bucketName}.s3.amazonaws.com`, NEWLINE,
     NEWLINE,
     'host', NEWLINE,
@@ -90,8 +91,8 @@ function getSignatureKey(options: Required<GetSignedUrlOptions>): string {
   ].reduce(hmacSha256 as reducer)
 }
 
-function getUrl(options: Required<GetSignedUrlOptions>, queryParameters: Record<string, string>, signature: string): string {
-  queryParameters['X-Amz-Signature'] = signature
+function getUrl(options: Required<GetSignedUrlOptions>, queryParameters: URLSearchParams, signature: string): string {
+  queryParameters.set('X-Amz-Signature', signature)
   return `https://${options.bucketName}.s3.amazonaws.com${options.objectPath}?${new URLSearchParams(queryParameters).toString()}`
 }
 

@@ -41,9 +41,9 @@ Deno.test('creates a presigned URL with a session token', () => {
       '&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20130524%2Fus-east-1%2Fs3%2Faws4_request',
       '&X-Amz-Date=20130524T000000Z',
       '&X-Amz-Expires=86400',
-      '&X-Amz-SignedHeaders=host',
       '&X-Amz-Security-Token=AQoEXAMPLEH4aoAH0gNCAPyJxz4BlCFFxWNE1OPTgk5TthT%2BFvwqnKwRcOIfrRh3c%2FLTo6UDdyJwOOvEVPvLXCrrrUtdnniCEXAMPLE%2FIvU1dYUg2RVAJBanLiHb4IgRmpRV3zrkuWJOgQs8IZZaIv2BXIa2R4OlgkBN9bkUDNCJiBeb%2FAXlzBBko7b15fjrBs2%2BcTQtpZ3CYWFXG8C5zqx37wnOE49mRl%2F%2BOtkIKGO7fAE',
-      '&X-Amz-Signature=b063192868383284628ff94ad97bdde05f0d107e75b5f014ed6679289849ba86',
+      '&X-Amz-SignedHeaders=host',
+      '&X-Amz-Signature=3e7fe71f8da45a44c5ee7851dc99611df44ed2171068fa778b3537333ee2b435',
     ].join('')
   )
 })
