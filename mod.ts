@@ -7,6 +7,7 @@ interface GetSignedUrlOptions {
   objectPath: string
   accessKeyId: string
   secretAccessKey: string
+  sessionToken?: string
   method?: 'GET' | 'PUT'
   region?: string
   expiresIn?: number
@@ -40,6 +41,7 @@ function parseOptions(provided: GetSignedUrlOptions): Required<GetSignedUrlOptio
       region: 'us-east-1',
       expiresIn: 86400,
       date: new Date(),
+      sessionToken: '',
     },
     ...provided,
   }
@@ -52,6 +54,7 @@ function getQueryParameters(options: Required<GetSignedUrlOptions>): Record<stri
     'X-Amz-Date': isoDate(options.date),
     'X-Amz-Expires': options.expiresIn.toString(),
     'X-Amz-SignedHeaders': 'host',
+    ...(options.sessionToken ? { 'X-Amz-Security-Token': options.sessionToken } : {}),
   }
 }
 

@@ -24,6 +24,7 @@ interface GetSignedUrlOptions {
   objectPath: string        // required
   accessKeyId: string       // required
   secretAccessKey: string   // required
+  sessionToken?: string     // AWS STS token
   method?: 'GET' | 'PUT'    // default 'GET'
   region?: string           // default 'us-east-1'
   expiresIn?: number        // seconds, default 86400 (24 hours)
