@@ -48,7 +48,7 @@ function parseOptions(provided: GetSignedUrlOptions): Required<GetSignedUrlOptio
 }
 
 function getQueryParameters(options: Required<GetSignedUrlOptions>): URLSearchParams {
-   return new URLSearchParams({
+  return new URLSearchParams({
     'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
     'X-Amz-Credential': `${options.accessKeyId}/${ymd(options.date)}/${options.region}/s3/aws4_request`,
     'X-Amz-Date': isoDate(options.date),
