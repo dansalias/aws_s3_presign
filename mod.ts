@@ -35,6 +35,9 @@ function isoDate(date: Date): string {
 }
 
 function parseOptions(provided: GetSignedUrlOptions): Required<GetSignedUrlOptions> {
+  if (!provided.objectPath.startsWith('/')) {
+    provided.objectPath = '/' + provided.objectPath
+  }
   return {
     ...{
       method: 'GET',
