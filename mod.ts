@@ -11,7 +11,8 @@ interface GetSignedUrlOptions {
   method?: 'GET' | 'PUT'
   region?: string
   expiresIn?: number
-  date?: Date
+  date?: Date,
+  endpoint?: string,
 }
 
 function sha256(data: string): string {
@@ -45,6 +46,7 @@ function parseOptions(provided: GetSignedUrlOptions): Required<GetSignedUrlOptio
       expiresIn: 86400,
       date: new Date(),
       sessionToken: '',
+      endpoint: 's3.amazonaws.com',
     },
     ...provided,
   }
@@ -67,7 +69,7 @@ function getCanonicalRequest(options: Required<GetSignedUrlOptions>, queryParame
     options.method, NEWLINE,
     options.objectPath, NEWLINE,
     queryParameters.toString(), NEWLINE,
-    `host:${options.bucketName}.s3.amazonaws.com`, NEWLINE,
+    `host:${options.bucketName}.${options.endpoint}`, NEWLINE,
     NEWLINE,
     'host', NEWLINE,
     'UNSIGNED-PAYLOAD',
@@ -96,7 +98,7 @@ function getSignatureKey(options: Required<GetSignedUrlOptions>): string {
 
 function getUrl(options: Required<GetSignedUrlOptions>, queryParameters: URLSearchParams, signature: string): string {
   queryParameters.set('X-Amz-Signature', signature)
-  return `https://${options.bucketName}.s3.amazonaws.com${options.objectPath}?${new URLSearchParams(queryParameters).toString()}`
+  return `https://${options.bucketName}.${options.endpoint}${options.objectPath}?${new URLSearchParams(queryParameters).toString()}`
 }
 
 export function getSignedUrl(options: GetSignedUrlOptions): string {
