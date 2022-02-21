@@ -29,6 +29,7 @@ interface GetSignedUrlOptions {
   region?: string           // default 'us-east-1'
   expiresIn?: number        // seconds, default 86400 (24 hours)
   date?: Date               // forced creation date, for testing
+  endpoint?: string         // custom endpoint, default s3.amazonaws.com
 }
 ```
 
