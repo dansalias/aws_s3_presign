@@ -3,8 +3,7 @@ import { Sha256, HmacSha256 } from 'https://deno.land/std@0.160.0/hash/sha256.ts
 const NEWLINE = '\n'
 
 interface GetSignedUrlOptions {
-  bucketName: string
-  objectPath: string
+  path: string
   accessKeyId: string
   secretAccessKey: string
   sessionToken?: string
@@ -36,9 +35,8 @@ function isoDate(date: Date): string {
 }
 
 function parseOptions(provided: GetSignedUrlOptions): Required<GetSignedUrlOptions> {
-  if (!provided.objectPath.startsWith('/')) {
-    provided.objectPath = '/' + provided.objectPath
-  }
+  const fixedPath = `/${provided.path}`.replaceAll('//', '/')
+
   return {
     ...{
       method: 'GET',
@@ -49,6 +47,7 @@ function parseOptions(provided: GetSignedUrlOptions): Required<GetSignedUrlOptio
       endpoint: 's3.amazonaws.com',
     },
     ...provided,
+    path: fixedPath,
   }
 }
 
@@ -65,9 +64,10 @@ function getQueryParameters(options: Required<GetSignedUrlOptions>): URLSearchPa
 
 function getCanonicalRequest(options: Required<GetSignedUrlOptions>, queryParameters: URLSearchParams): string {
   queryParameters.sort()
+
   return [
     options.method, NEWLINE,
-    options.objectPath, NEWLINE,
+    options.path, NEWLINE,
     queryParameters.toString(), NEWLINE,
     `host:${options.endpoint}`, NEWLINE,
     NEWLINE,
@@ -87,6 +87,7 @@ function getSignaturePayload(options: Required<GetSignedUrlOptions>, payload: st
 
 function getSignatureKey(options: Required<GetSignedUrlOptions>): string {
   type reducer = (previous: string, current: string) => any
+
   return [
     `AWS4${options.secretAccessKey}`,
     ymd(options.date),
@@ -98,7 +99,8 @@ function getSignatureKey(options: Required<GetSignedUrlOptions>): string {
 
 function getUrl(options: Required<GetSignedUrlOptions>, queryParameters: URLSearchParams, signature: string): string {
   queryParameters.set('X-Amz-Signature', signature)
-  return `https://${options.endpoint}${options.objectPath}?${new URLSearchParams(queryParameters).toString()}`
+
+  return `https://${options.endpoint}${options.path}?${new URLSearchParams(queryParameters).toString()}`
 }
 
 export function getSignedUrl(options: GetSignedUrlOptions): string {
@@ -109,5 +111,6 @@ export function getSignedUrl(options: GetSignedUrlOptions): string {
   const signatureKey = getSignatureKey(parsedOptions)
   const signature = hmacSha256Hex(signatureKey, signaturePayload)
   const url = getUrl(parsedOptions, queryParameters, signature)
+
   return url
 }
