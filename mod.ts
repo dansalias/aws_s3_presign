@@ -28,11 +28,11 @@ function hmacSha256Hex(key: string | ArrayBuffer, data: string): string {
 }
 
 function ymd(date: Date): string {
-  return date.toISOString().substring(0,10).replace(/[^\d]/g, '')
+  return date.toISOString().substring(0, 10).replace(/[^\d]/g, '')
 }
 
 function isoDate(date: Date): string {
-  return `${date.toISOString().substring(0,19).replace(/[^\dT]/g, '')}Z`
+  return `${date.toISOString().substring(0, 19).replace(/[^\dT]/g, '')}Z`
 }
 
 function parseOptions(provided: GetSignedUrlOptions): Required<GetSignedUrlOptions> {
@@ -69,7 +69,7 @@ function getCanonicalRequest(options: Required<GetSignedUrlOptions>, queryParame
     options.method, NEWLINE,
     options.objectPath, NEWLINE,
     queryParameters.toString(), NEWLINE,
-    `host:${options.bucketName}.${options.endpoint}`, NEWLINE,
+    `host:${options.endpoint}`, NEWLINE,
     NEWLINE,
     'host', NEWLINE,
     'UNSIGNED-PAYLOAD',
@@ -98,7 +98,7 @@ function getSignatureKey(options: Required<GetSignedUrlOptions>): string {
 
 function getUrl(options: Required<GetSignedUrlOptions>, queryParameters: URLSearchParams, signature: string): string {
   queryParameters.set('X-Amz-Signature', signature)
-  return `https://${options.bucketName}.${options.endpoint}${options.objectPath}?${new URLSearchParams(queryParameters).toString()}`
+  return `https://${options.endpoint}${options.objectPath}?${new URLSearchParams(queryParameters).toString()}`
 }
 
 export function getSignedUrl(options: GetSignedUrlOptions): string {
