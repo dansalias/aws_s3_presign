@@ -4,6 +4,7 @@ const NEWLINE = '\n'
 
 interface GetSignedUrlOptions {
   path: string
+  query?: Record<string, string | number>
   accessKeyId: string
   secretAccessKey: string
   sessionToken?: string
@@ -45,6 +46,7 @@ function parseOptions(provided: GetSignedUrlOptions): Required<GetSignedUrlOptio
       date: new Date(),
       sessionToken: '',
       endpoint: 's3.amazonaws.com',
+      query: {}
     },
     ...provided,
     path: fixedPath,
@@ -59,6 +61,7 @@ function getQueryParameters(options: Required<GetSignedUrlOptions>): URLSearchPa
     'X-Amz-Expires': options.expiresIn.toString(),
     'X-Amz-SignedHeaders': 'host',
     ...(options.sessionToken ? { 'X-Amz-Security-Token': options.sessionToken } : {}),
+    ...options.query,
   })
 }
 
