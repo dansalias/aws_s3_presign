@@ -1,4 +1,4 @@
-import { Sha256, HmacSha256 } from 'https://deno.land/std/hash/sha256.ts'
+import { Sha256, HmacSha256 } from 'https://deno.land/std@0.160.0/hash/sha256.ts'
 
 const NEWLINE = '\n'
 
