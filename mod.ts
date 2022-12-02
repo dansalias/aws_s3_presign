@@ -10,6 +10,7 @@ interface GetSignedUrlOptions {
   sessionToken?: string
   method?: 'GET' | 'PUT'
   region?: string
+  queryParams?: Record<string, string | number>
   expiresIn?: number
   date?: Date,
   endpoint?: string,
@@ -47,6 +48,7 @@ function parseOptions(provided: GetSignedUrlOptions): Required<GetSignedUrlOptio
       date: new Date(),
       sessionToken: '',
       endpoint: 's3.amazonaws.com',
+      queryParams: {},
     },
     ...provided,
   }
