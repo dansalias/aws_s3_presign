@@ -18,7 +18,7 @@ Deno.test('creates a presigned URL', () => {
   assertEquals(
     getSignedUrl(baseTestOptions),
     [
-      'https://examplebucket.s3.amazonaws.com/test.txt',
+      'https://s3.amazonaws.com/examplebucket/test.txt',
       '?X-Amz-Algorithm=AWS4-HMAC-SHA256',
       '&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20130524%2Fus-east-1%2Fs3%2Faws4_request',
       '&X-Amz-Date=20130524T000000Z',
@@ -36,7 +36,7 @@ Deno.test('creates a presigned URL with a session token', () => {
       sessionToken: 'AQoEXAMPLEH4aoAH0gNCAPyJxz4BlCFFxWNE1OPTgk5TthT+FvwqnKwRcOIfrRh3c/LTo6UDdyJwOOvEVPvLXCrrrUtdnniCEXAMPLE/IvU1dYUg2RVAJBanLiHb4IgRmpRV3zrkuWJOgQs8IZZaIv2BXIa2R4OlgkBN9bkUDNCJiBeb/AXlzBBko7b15fjrBs2+cTQtpZ3CYWFXG8C5zqx37wnOE49mRl/+OtkIKGO7fAE',
     }),
     [
-      'https://examplebucket.s3.amazonaws.com/test.txt',
+      'https://s3.amazonaws.com/examplebucket/test.txt',
       '?X-Amz-Algorithm=AWS4-HMAC-SHA256',
       '&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20130524%2Fus-east-1%2Fs3%2Faws4_request',
       '&X-Amz-Date=20130524T000000Z',

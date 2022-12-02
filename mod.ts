@@ -100,7 +100,7 @@ function getSignatureKey(options: Required<GetSignedUrlOptions>): string {
 
 function getUrl(options: Required<GetSignedUrlOptions>, queryParameters: URLSearchParams, signature: string): string {
   queryParameters.set('X-Amz-Signature', signature)
-  return `https://${options.bucketName}.${options.endpoint}${options.objectPath}?${new URLSearchParams(queryParameters).toString()}`
+  return `https://${options.endpoint}/${options.bucketName}${options.objectPath}?${new URLSearchParams(queryParameters).toString()}`
 }
 
 export function getSignedUrl(options: GetSignedUrlOptions): string {
