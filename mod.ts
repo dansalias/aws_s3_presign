@@ -3,16 +3,18 @@ import { Sha256, HmacSha256 } from 'https://deno.land/std@0.160.0/hash/sha256.ts
 const NEWLINE = '\n'
 
 interface GetSignedUrlOptions {
-  bucketName: string
-  objectPath: string
+  bucket: string
+  key: string
   accessKeyId: string
   secretAccessKey: string
   sessionToken?: string
   method?: 'GET' | 'PUT'
   region?: string
+  queryParams?: Record<string, string | number>
   expiresIn?: number
   date?: Date,
   endpoint?: string,
+  usePathRequestStyle?: boolean,
 }
 
 function sha256(data: string): string {
@@ -28,17 +30,24 @@ function hmacSha256Hex(key: string | ArrayBuffer, data: string): string {
 }
 
 function ymd(date: Date): string {
-  return date.toISOString().substring(0,10).replace(/[^\d]/g, '')
+  return date.toISOString().substring(0, 10).replace(/[^\d]/g, '')
 }
 
 function isoDate(date: Date): string {
-  return `${date.toISOString().substring(0,19).replace(/[^\dT]/g, '')}Z`
+  return `${date.toISOString().substring(0, 19).replace(/[^\dT]/g, '')}Z`
+}
+
+function getHost(options: GetSignedUrlOptions) {
+  return options.usePathRequestStyle ? options.endpoint : `${options.bucket}.${options.endpoint}`
+}
+
+function getPath(options: GetSignedUrlOptions) {
+  const path = options.usePathRequestStyle ? `/${options.bucket}/${options.key}` : `/${options.key}`
+
+  return path.replaceAll(/\/+/g, '/')
 }
 
 function parseOptions(provided: GetSignedUrlOptions): Required<GetSignedUrlOptions> {
-  if (!provided.objectPath.startsWith('/')) {
-    provided.objectPath = '/' + provided.objectPath
-  }
   return {
     ...{
       method: 'GET',
@@ -47,6 +56,8 @@ function parseOptions(provided: GetSignedUrlOptions): Required<GetSignedUrlOptio
       date: new Date(),
       sessionToken: '',
       endpoint: 's3.amazonaws.com',
+      queryParams: {},
+      usePathRequestStyle: false,
     },
     ...provided,
   }
@@ -60,16 +71,18 @@ function getQueryParameters(options: Required<GetSignedUrlOptions>): URLSearchPa
     'X-Amz-Expires': options.expiresIn.toString(),
     'X-Amz-SignedHeaders': 'host',
     ...(options.sessionToken ? { 'X-Amz-Security-Token': options.sessionToken } : {}),
+    ...options.queryParams,
   })
 }
 
 function getCanonicalRequest(options: Required<GetSignedUrlOptions>, queryParameters: URLSearchParams): string {
   queryParameters.sort()
+
   return [
     options.method, NEWLINE,
-    options.objectPath, NEWLINE,
+    getPath(options), NEWLINE,
     queryParameters.toString(), NEWLINE,
-    `host:${options.bucketName}.${options.endpoint}`, NEWLINE,
+    `host:${getHost(options)}`, NEWLINE,
     NEWLINE,
     'host', NEWLINE,
     'UNSIGNED-PAYLOAD',
@@ -87,6 +100,7 @@ function getSignaturePayload(options: Required<GetSignedUrlOptions>, payload: st
 
 function getSignatureKey(options: Required<GetSignedUrlOptions>): string {
   type reducer = (previous: string, current: string) => any
+
   return [
     `AWS4${options.secretAccessKey}`,
     ymd(options.date),
@@ -98,7 +112,8 @@ function getSignatureKey(options: Required<GetSignedUrlOptions>): string {
 
 function getUrl(options: Required<GetSignedUrlOptions>, queryParameters: URLSearchParams, signature: string): string {
   queryParameters.set('X-Amz-Signature', signature)
-  return `https://${options.bucketName}.${options.endpoint}${options.objectPath}?${new URLSearchParams(queryParameters).toString()}`
+
+  return `https://${getHost(options)}${getPath(options)}?${new URLSearchParams(queryParameters).toString()}`
 }
 
 export function getSignedUrl(options: GetSignedUrlOptions): string {
@@ -109,5 +124,6 @@ export function getSignedUrl(options: GetSignedUrlOptions): string {
   const signatureKey = getSignatureKey(parsedOptions)
   const signature = hmacSha256Hex(signatureKey, signaturePayload)
   const url = getUrl(parsedOptions, queryParameters, signature)
+
   return url
 }

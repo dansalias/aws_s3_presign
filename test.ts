@@ -6,8 +6,8 @@ import { getSignedUrl } from './mod.ts'
 const date = new Date('Fri, 24 May 2013 00:00:00 GMT')
 
 const baseTestOptions = {
-  bucketName: 'examplebucket',
-  objectPath: '/test.txt',
+  bucket: 'examplebucket',
+  key: '/test.txt',
   region: 'us-east-1',
   accessKeyId: 'AKIAIOSFODNN7EXAMPLE',
   secretAccessKey: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
