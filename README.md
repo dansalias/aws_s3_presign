@@ -20,16 +20,18 @@ const url = getSignedUrl({
 ## Options
 ```ts
 interface GetSignedUrlOptions {
-  bucketName: string        // required
-  objectPath: string        // required
-  accessKeyId: string       // required
-  secretAccessKey: string   // required
-  sessionToken?: string     // AWS STS token
-  method?: 'GET' | 'PUT'    // default 'GET'
-  region?: string           // default 'us-east-1'
-  expiresIn?: number        // seconds, default 86400 (24 hours)
-  date?: Date               // forced creation date, for testing
-  endpoint?: string         // custom endpoint, default s3.amazonaws.com
+  bucket: string                                // required
+  key: string                                   // required
+  accessKeyId: string                           // required
+  secretAccessKey: string                       // required
+  sessionToken?: string                         // AWS STS token
+  method?: 'GET' | 'PUT'                        // default 'GET'
+  region?: string                               // default 'us-east-1'
+  queryParams?: Record<string, string | number> // additional query parameters
+  expiresIn?: number                            // seconds, default 86400 (24 hours)
+  date?: Date                                   // forced creation date, for testing
+  endpoint?: string                             // custom endpoint, default s3.amazonaws.com
+  usePathRequestStyle?: boolean                 // use s3.amazonaws.com/<bucket>/<key> request style
 }
 ```
 
