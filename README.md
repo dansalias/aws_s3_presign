@@ -11,8 +11,8 @@ import { getSignedUrl } from 'https://deno.land/x/aws_s3_presign/mod.ts'
 const url = getSignedUrl({
   accessKeyId: 'my-aws-access-key-id',
   secretAccessKey: 'my-aws-secret-access-key',
-  bucketName: 'example-bucket',
-  objectPath: '/test.txt',
+  bucket: 'example-bucket',
+  key: '/test.txt',
   region: 'us-east-1',
 })
 ```
