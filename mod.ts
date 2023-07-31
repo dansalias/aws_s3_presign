@@ -2,7 +2,7 @@ import { Sha256, HmacSha256 } from 'https://deno.land/std@0.160.0/hash/sha256.ts
 
 const NEWLINE = '\n'
 
-interface GetSignedUrlOptions {
+export interface GetSignedUrlOptions {
   bucket: string
   key: string
   accessKeyId: string

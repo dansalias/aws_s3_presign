@@ -1,11 +1,11 @@
 import {
   assertEquals,
 } from 'https://deno.land/std@0.103.0/testing/asserts.ts'
-import { getPreSignatureKey, getSignedUrl } from './mod.ts'
+import { getPreSignatureKey, getSignedUrl, GetSignedUrlOptions } from './mod.ts'
 
 const date = new Date('Fri, 24 May 2013 00:00:00 GMT')
 
-const baseTestOptions = {
+const baseTestOptions: GetSignedUrlOptions = {
   bucket: 'examplebucket',
   key: '/test.txt',
   region: 'us-east-1',
