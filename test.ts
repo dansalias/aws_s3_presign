@@ -1,7 +1,7 @@
 import {
   assertEquals,
 } from 'https://deno.land/std@0.103.0/testing/asserts.ts'
-import { getSignedUrl } from './mod.ts'
+import { getPreSignatureKey, getSignedUrl } from './mod.ts'
 
 const date = new Date('Fri, 24 May 2013 00:00:00 GMT')
 
@@ -47,3 +47,15 @@ Deno.test('creates a presigned URL with a session token', () => {
     ].join('')
   )
 })
+
+Deno.test('creates a pre signature key', () => {
+  const signature = getPreSignatureKey(baseTestOptions);
+  assertEquals(signature.byteLength, 32);
+})
+
+Deno.test('generate two urls and compare', () => {
+  const signature = getPreSignatureKey(baseTestOptions);
+  const preSignatureKeyUrl = getSignedUrl(baseTestOptions, signature);
+  const url = getSignedUrl(baseTestOptions);
+  assertEquals(preSignatureKeyUrl, url);
+});

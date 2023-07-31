@@ -116,12 +116,17 @@ function getUrl(options: Required<GetSignedUrlOptions>, queryParameters: URLSear
   return `https://${getHost(options)}${getPath(options)}?${new URLSearchParams(queryParameters).toString()}`
 }
 
-export function getSignedUrl(options: GetSignedUrlOptions): string {
+export function getPreSignatureKey(options: GetSignedUrlOptions): any {
+  const parsedOptions = parseOptions(options);
+  return getSignatureKey(parsedOptions);
+}
+
+export function getSignedUrl(options: GetSignedUrlOptions, preSignatureKey?: string): string {
   const parsedOptions = parseOptions(options)
   const queryParameters = getQueryParameters(parsedOptions)
   const canonicalRequest = getCanonicalRequest(parsedOptions, queryParameters)
   const signaturePayload = getSignaturePayload(parsedOptions, canonicalRequest)
-  const signatureKey = getSignatureKey(parsedOptions)
+  const signatureKey = preSignatureKey || getSignatureKey(parsedOptions)
   const signature = hmacSha256Hex(signatureKey, signaturePayload)
   const url = getUrl(parsedOptions, queryParameters, signature)
 
