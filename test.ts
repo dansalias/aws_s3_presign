@@ -54,8 +54,10 @@ Deno.test('creates a pre signature key', () => {
 })
 
 Deno.test('generate two urls and compare', () => {
-  const signature = getPreSignatureKey(baseTestOptions);
-  const preSignatureKeyUrl = getSignedUrl(baseTestOptions, signature);
+  const signatureKey = getPreSignatureKey(baseTestOptions);
+  const baseTestOptionsWithSignature = { ...baseTestOptions, signatureKey: signatureKey }
+  const preSignatureKeyUrl = getSignedUrl(baseTestOptionsWithSignature);
+
   const url = getSignedUrl(baseTestOptions);
   assertEquals(preSignatureKeyUrl, url);
 });

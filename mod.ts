@@ -15,6 +15,7 @@ export interface GetSignedUrlOptions {
   date?: Date,
   endpoint?: string,
   usePathRequestStyle?: boolean,
+  signatureKey?: string,
 }
 
 function sha256(data: string): string {
@@ -58,6 +59,7 @@ function parseOptions(provided: GetSignedUrlOptions): Required<GetSignedUrlOptio
       endpoint: 's3.amazonaws.com',
       queryParams: {},
       usePathRequestStyle: false,
+      signatureKey: '',
     },
     ...provided,
   }
@@ -121,12 +123,12 @@ export function getPreSignatureKey(options: GetSignedUrlOptions): any {
   return getSignatureKey(parsedOptions);
 }
 
-export function getSignedUrl(options: GetSignedUrlOptions, preSignatureKey?: string): string {
+export function getSignedUrl(options: GetSignedUrlOptions): string {
   const parsedOptions = parseOptions(options)
   const queryParameters = getQueryParameters(parsedOptions)
   const canonicalRequest = getCanonicalRequest(parsedOptions, queryParameters)
   const signaturePayload = getSignaturePayload(parsedOptions, canonicalRequest)
-  const signatureKey = preSignatureKey || getSignatureKey(parsedOptions)
+  const signatureKey = parsedOptions.signatureKey || getSignatureKey(parsedOptions)
   const signature = hmacSha256Hex(signatureKey, signaturePayload)
   const url = getUrl(parsedOptions, queryParameters, signature)
 
