@@ -48,16 +48,15 @@ Deno.test('creates a presigned URL with a session token', () => {
   )
 })
 
-Deno.test('creates a pre signature key', () => {
-  const signature = getSignatureKey(baseTestOptions);
-  assertEquals(signature.byteLength, 32);
+Deno.test('creates a signature key', () => {
+  assertEquals(getSignatureKey(baseTestOptions).byteLength, 32)
 })
 
 Deno.test('generate two urls and compare', () => {
-  const signatureKey = getSignatureKey(baseTestOptions);
+  const signatureKey = getSignatureKey(baseTestOptions)
   const baseTestOptionsWithSignature = { ...baseTestOptions, signatureKey: signatureKey }
-  const preSignatureKeyUrl = getSignedUrl(baseTestOptionsWithSignature);
+  const preSignatureKeyUrl = getSignedUrl(baseTestOptionsWithSignature)
 
-  const url = getSignedUrl(baseTestOptions);
-  assertEquals(preSignatureKeyUrl, url);
-});
+  const url = getSignedUrl(baseTestOptions)
+  assertEquals(preSignatureKeyUrl, url)
+})
