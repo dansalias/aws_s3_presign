@@ -5,7 +5,7 @@ import { getSignatureKey, getSignedUrl } from './mod.ts'
 
 const date = new Date('Fri, 24 May 2013 00:00:00 GMT')
 
-const baseTestOptions: GetSignedUrlOptions = {
+const baseTestOptions = {
   bucket: 'examplebucket',
   key: '/test.txt',
   region: 'us-east-1',

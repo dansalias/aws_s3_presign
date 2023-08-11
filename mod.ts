@@ -28,7 +28,7 @@ interface GetSignedUrlOptions extends Partial<OptionsWithDefaults> {
   accessKeyId: string
   secretAccessKey: string
   sessionToken?: string
-  signatureKey?: string,
+  signatureKey?: ArrayBuffer,
 }
 
 interface GetSignatureKeyOptions {
@@ -104,16 +104,14 @@ function getSignaturePayload(options: ParsedOptions, payload: string): string {
   ].join('')
 }
 
-export function getSignatureKey(options: GetSignatureKeyOptions): string {
-  type reducer = (previous: string, current: string) => any
+export function getSignatureKey(options: GetSignatureKeyOptions): ArrayBuffer {
+  let key: ArrayBuffer
+  key = hmacSha256(`AWS4${options.secretAccessKey}`, ymd(options.date))
+  key = hmacSha256(key, options.region)
+  key = hmacSha256(key, 's3')
+  key = hmacSha256(key, 'aws4_request')
 
-  return [
-    `AWS4${options.secretAccessKey}`,
-    ymd(options.date),
-    options.region,
-    's3',
-    'aws4_request',
-  ].reduce(hmacSha256 as reducer)
+  return key
 }
 
 function getUrl(options: ParsedOptions, queryParameters: URLSearchParams, signature: string): string {
