@@ -2,21 +2,42 @@ import { Sha256, HmacSha256 } from 'https://deno.land/std@0.160.0/hash/sha256.ts
 
 const NEWLINE = '\n'
 
-export interface GetSignedUrlOptions {
+const DEFAULT_OPTIONS: OptionsWithDefaults = {
+  method: 'GET',
+  region: 'us-east-1',
+  queryParams: {},
+  expiresIn: 86400,
+  date: new Date(),
+  endpoint: 's3.amazonaws.com',
+  usePathRequestStyle: false,
+}
+
+interface OptionsWithDefaults {
+  method: 'GET' | 'PUT'
+  region: string
+  queryParams: Record<string, string | number>
+  expiresIn: number
+  date: Date,
+  endpoint: string,
+  usePathRequestStyle: boolean,
+}
+
+interface GetSignedUrlOptions extends Partial<OptionsWithDefaults> {
   bucket: string
   key: string
   accessKeyId: string
   secretAccessKey: string
   sessionToken?: string
-  method?: 'GET' | 'PUT'
-  region?: string
-  queryParams?: Record<string, string | number>
-  expiresIn?: number
-  date?: Date,
-  endpoint?: string,
-  usePathRequestStyle?: boolean,
   signatureKey?: string,
 }
+
+interface GetSignatureKeyOptions {
+  date: Date,
+  region: string
+  secretAccessKey: string
+}
+
+type ParsedOptions = GetSignedUrlOptions & OptionsWithDefaults
 
 function sha256(data: string): string {
   return new Sha256().update(data).hex()
@@ -38,34 +59,17 @@ function isoDate(date: Date): string {
   return `${date.toISOString().substring(0, 19).replace(/[^\dT]/g, '')}Z`
 }
 
-function getHost(options: GetSignedUrlOptions) {
+function getHost(options: ParsedOptions) {
   return options.usePathRequestStyle ? options.endpoint : `${options.bucket}.${options.endpoint}`
 }
 
-function getPath(options: GetSignedUrlOptions) {
+function getPath(options: ParsedOptions) {
   const path = options.usePathRequestStyle ? `/${options.bucket}/${options.key}` : `/${options.key}`
 
   return path.replaceAll(/\/+/g, '/')
 }
 
-function parseOptions(provided: GetSignedUrlOptions): Required<GetSignedUrlOptions> {
-  return {
-    ...{
-      method: 'GET',
-      region: 'us-east-1',
-      expiresIn: 86400,
-      date: new Date(),
-      sessionToken: '',
-      endpoint: 's3.amazonaws.com',
-      queryParams: {},
-      usePathRequestStyle: false,
-      signatureKey: '',
-    },
-    ...provided,
-  }
-}
-
-function getQueryParameters(options: Required<GetSignedUrlOptions>): URLSearchParams {
+function getQueryParameters(options: ParsedOptions): URLSearchParams {
   return new URLSearchParams({
     'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
     'X-Amz-Credential': `${options.accessKeyId}/${ymd(options.date)}/${options.region}/s3/aws4_request`,
@@ -77,7 +81,7 @@ function getQueryParameters(options: Required<GetSignedUrlOptions>): URLSearchPa
   })
 }
 
-function getCanonicalRequest(options: Required<GetSignedUrlOptions>, queryParameters: URLSearchParams): string {
+function getCanonicalRequest(options: ParsedOptions, queryParameters: URLSearchParams): string {
   queryParameters.sort()
 
   return [
@@ -91,7 +95,7 @@ function getCanonicalRequest(options: Required<GetSignedUrlOptions>, queryParame
   ].join('')
 }
 
-function getSignaturePayload(options: Required<GetSignedUrlOptions>, payload: string): string {
+function getSignaturePayload(options: ParsedOptions, payload: string): string {
   return [
     'AWS4-HMAC-SHA256', NEWLINE,
     isoDate(options.date), NEWLINE,
@@ -112,20 +116,23 @@ export function getSignatureKey(options: GetSignatureKeyOptions): string {
   ].reduce(hmacSha256 as reducer)
 }
 
-function getUrl(options: Required<GetSignedUrlOptions>, queryParameters: URLSearchParams, signature: string): string {
+function getUrl(options: ParsedOptions, queryParameters: URLSearchParams, signature: string): string {
   queryParameters.set('X-Amz-Signature', signature)
 
   return `https://${getHost(options)}${getPath(options)}?${new URLSearchParams(queryParameters).toString()}`
 }
 
-export function getSignedUrl(options: GetSignedUrlOptions): string {
-  const parsedOptions = parseOptions(options)
-  const queryParameters = getQueryParameters(parsedOptions)
-  const canonicalRequest = getCanonicalRequest(parsedOptions, queryParameters)
-  const signaturePayload = getSignaturePayload(parsedOptions, canonicalRequest)
-  const signatureKey = parsedOptions.signatureKey || getSignatureKey(parsedOptions)
+export function getSignedUrl(providedOptions: GetSignedUrlOptions): string {
+  const options: ParsedOptions = {
+    ...DEFAULT_OPTIONS,
+    ...providedOptions,
+  }
+  const queryParameters = getQueryParameters(options)
+  const canonicalRequest = getCanonicalRequest(options, queryParameters)
+  const signaturePayload = getSignaturePayload(options, canonicalRequest)
+  const signatureKey = options.signatureKey || getSignatureKey(options)
   const signature = hmacSha256Hex(signatureKey, signaturePayload)
-  const url = getUrl(parsedOptions, queryParameters, signature)
+  const url = getUrl(options, queryParameters, signature)
 
   return url
 }
