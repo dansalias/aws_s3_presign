@@ -36,6 +36,28 @@ interface GetSignedUrlOptions {
 }
 ```
 
+## Pre-generating signature keys
+In instances where a large number of URLs is required it will be computationally
+benefical to generate the required signature key and pass it to
+`getSignedUrl(...)` to avoid recalculation:
+
+```ts
+import { getSignatureKey, getSignedUrl } from 'https://deno.land/x/aws_s3_presign/mod.ts'
+
+const date = new Date()
+
+const signatureKey = getSignatureKey({
+  date,
+  region: 'us-east-1',
+  secretAccessKey: 'aws-secret-access-key',
+})
+
+const url = getSignedUrl({
+  signatureKey,
+  ...
+})
+```
+
 ## Testing
 ```
 git clone https://github.com/dansalias/aws_s3_presign
