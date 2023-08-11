@@ -32,7 +32,7 @@ interface GetSignedUrlOptions {
   date?: Date                                   // forced creation date, for testing
   endpoint?: string                             // custom endpoint, default s3.amazonaws.com
   usePathRequestStyle?: boolean                 // use s3.amazonaws.com/<bucket>/<key> request style
-  signatureKey?: string                         // optional pre-generated signature created with getPreSignatureKey()
+  signatureKey?: string                         // optional pre-generated signature created with getSignatureKey()
 }
 ```
 

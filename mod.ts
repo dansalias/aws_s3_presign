@@ -100,7 +100,7 @@ function getSignaturePayload(options: Required<GetSignedUrlOptions>, payload: st
   ].join('')
 }
 
-function getSignatureKey(options: Required<GetSignedUrlOptions>): string {
+export function getSignatureKey(options: GetSignatureKeyOptions): string {
   type reducer = (previous: string, current: string) => any
 
   return [
@@ -116,11 +116,6 @@ function getUrl(options: Required<GetSignedUrlOptions>, queryParameters: URLSear
   queryParameters.set('X-Amz-Signature', signature)
 
   return `https://${getHost(options)}${getPath(options)}?${new URLSearchParams(queryParameters).toString()}`
-}
-
-export function getPreSignatureKey(options: GetSignedUrlOptions): any {
-  const parsedOptions = parseOptions(options);
-  return getSignatureKey(parsedOptions);
 }
 
 export function getSignedUrl(options: GetSignedUrlOptions): string {
