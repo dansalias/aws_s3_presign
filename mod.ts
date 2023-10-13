@@ -10,6 +10,7 @@ const DEFAULT_OPTIONS: OptionsWithDefaults = {
   date: new Date(),
   endpoint: 's3.amazonaws.com',
   usePathRequestStyle: false,
+  protocol: 'https'
 }
 
 interface OptionsWithDefaults {
@@ -20,6 +21,7 @@ interface OptionsWithDefaults {
   date: Date,
   endpoint: string,
   usePathRequestStyle: boolean,
+  protocol: string,
 }
 
 interface GetSignedUrlOptions extends Partial<OptionsWithDefaults> {
@@ -117,7 +119,7 @@ export function getSignatureKey(options: GetSignatureKeyOptions): ArrayBuffer {
 function getUrl(options: ParsedOptions, queryParameters: URLSearchParams, signature: string): string {
   queryParameters.set('X-Amz-Signature', signature)
 
-  return `https://${getHost(options)}${getPath(options)}?${new URLSearchParams(queryParameters).toString()}`
+  return `${options.protocol}://${getHost(options)}${getPath(options)}?${new URLSearchParams(queryParameters).toString()}`
 }
 
 export function getSignedUrl(providedOptions: GetSignedUrlOptions): string {

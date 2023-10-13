@@ -31,6 +31,7 @@ interface GetSignedUrlOptions {
   expiresIn?: number                            // seconds, default 86400 (24 hours)
   date?: Date                                   // forced creation date, for testing
   endpoint?: string                             // custom endpoint, default s3.amazonaws.com
+  protocol?: string                             // 'http' or 'https' for endpoint, default 'https'
   usePathRequestStyle?: boolean                 // use s3.amazonaws.com/<bucket>/<key> request style
   signatureKey?: string                         // optional pre-generated signature created with getSignatureKey()
 }
