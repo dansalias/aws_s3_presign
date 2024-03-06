@@ -2,44 +2,45 @@ import { Sha256, HmacSha256 } from 'https://deno.land/std@0.160.0/hash/sha256.ts
 
 const NEWLINE = '\n'
 
-const DEFAULT_OPTIONS: OptionsWithDefaults = {
-  method: 'GET',
-  region: 'us-east-1',
-  queryParams: {},
-  expiresIn: 86400,
-  date: new Date(),
-  endpoint: 's3.amazonaws.com',
-  usePathRequestStyle: false,
-  protocol: 'https'
-}
-
-interface OptionsWithDefaults {
-  method: 'GET' | 'PUT'
-  region: string
-  queryParams: Record<string, string | number>
-  expiresIn: number
-  date: Date,
-  endpoint: string,
-  usePathRequestStyle: boolean,
-  protocol: string,
-}
-
-interface GetSignedUrlOptions extends Partial<OptionsWithDefaults> {
-  bucket: string
-  key: string
-  accessKeyId: string
-  secretAccessKey: string
-  sessionToken?: string
-  signatureKey?: ArrayBuffer,
-}
-
 interface GetSignatureKeyOptions {
   date: Date,
   region: string
   secretAccessKey: string
 }
 
-type ParsedOptions = GetSignedUrlOptions & OptionsWithDefaults
+interface GetSignedUrlOptions {
+  bucket: string
+  key: string
+  accessKeyId: string
+  secretAccessKey: string
+  date: Date
+  expiresIn: number
+  region: string
+  sessionToken?: string
+  method?: 'GET' | 'PUT'
+  queryParams?: Record<string, string | number>
+  endpoint?: string,
+  protocol?: string,
+  usePathRequestStyle?: boolean,
+  signatureKey?: ArrayBuffer,
+}
+
+type UserOptions = Partial<GetSignedUrlOptions> & Pick<GetSignedUrlOptions,
+  'bucket' |
+  'key' |
+  'accessKeyId' |
+  'secretAccessKey'
+>
+
+const DEFAULT_OPTIONS: Partial<GetSignedUrlOptions> = {
+  method: 'GET',
+  region: 'us-east-1',
+  queryParams: {},
+  expiresIn: 86400,
+  endpoint: 's3.amazonaws.com',
+  usePathRequestStyle: false,
+  protocol: 'https'
+}
 
 function sha256(data: string): string {
   return new Sha256().update(data).hex()
@@ -61,17 +62,17 @@ function isoDate(date: Date): string {
   return `${date.toISOString().substring(0, 19).replace(/[^\dT]/g, '')}Z`
 }
 
-function getHost(options: ParsedOptions) {
+function getHost(options: GetSignedUrlOptions) {
   return options.usePathRequestStyle ? options.endpoint : `${options.bucket}.${options.endpoint}`
 }
 
-function getPath(options: ParsedOptions) {
+function getPath(options: GetSignedUrlOptions) {
   const path = options.usePathRequestStyle ? `/${options.bucket}/${options.key}` : `/${options.key}`
 
   return path.replaceAll(/\/+/g, '/')
 }
 
-function getQueryParameters(options: ParsedOptions): URLSearchParams {
+function getQueryParameters(options: GetSignedUrlOptions): URLSearchParams {
   return new URLSearchParams({
     'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
     'X-Amz-Credential': `${options.accessKeyId}/${ymd(options.date)}/${options.region}/s3/aws4_request`,
@@ -83,7 +84,7 @@ function getQueryParameters(options: ParsedOptions): URLSearchParams {
   })
 }
 
-function getCanonicalRequest(options: ParsedOptions, queryParameters: URLSearchParams): string {
+function getCanonicalRequest(options: GetSignedUrlOptions, queryParameters: URLSearchParams): string {
   queryParameters.sort()
 
   return [
@@ -97,7 +98,7 @@ function getCanonicalRequest(options: ParsedOptions, queryParameters: URLSearchP
   ].join('')
 }
 
-function getSignaturePayload(options: ParsedOptions, payload: string): string {
+function getSignaturePayload(options: GetSignedUrlOptions, payload: string): string {
   return [
     'AWS4-HMAC-SHA256', NEWLINE,
     isoDate(options.date), NEWLINE,
@@ -116,17 +117,20 @@ export function getSignatureKey(options: GetSignatureKeyOptions): ArrayBuffer {
   return key
 }
 
-function getUrl(options: ParsedOptions, queryParameters: URLSearchParams, signature: string): string {
+function getUrl(options: GetSignedUrlOptions, queryParameters: URLSearchParams, signature: string): string {
   queryParameters.set('X-Amz-Signature', signature)
 
   return `${options.protocol}://${getHost(options)}${getPath(options)}?${new URLSearchParams(queryParameters).toString()}`
 }
 
-export function getSignedUrl(providedOptions: GetSignedUrlOptions): string {
-  const options: ParsedOptions = {
+export function getSignedUrl(providedOptions: UserOptions): string {
+  const options = {
     ...DEFAULT_OPTIONS,
     ...providedOptions,
-  }
+    ...{
+      date: providedOptions.date ?? new Date(),
+    }
+  } as GetSignedUrlOptions
   const queryParameters = getQueryParameters(options)
   const canonicalRequest = getCanonicalRequest(options, queryParameters)
   const signaturePayload = getSignaturePayload(options, canonicalRequest)
